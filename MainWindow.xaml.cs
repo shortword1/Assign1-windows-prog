@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using System.IO;
 using TagLib;
+using System.Collections.ObjectModel;
+using System.Windows.Controls;
 
 namespace Assign1
 {
@@ -11,13 +14,17 @@ namespace Assign1
     {
         private string currentFilePath;
         private DispatcherTimer progressTimer;
+        private ObservableCollection<string> recentSongs = new ObservableCollection<string>();
 
         public MainWindow()
         {
             InitializeComponent();
-            progressTimer = new DispatcherTimer();
-            progressTimer.Interval = TimeSpan.FromMilliseconds(200);
+            progressTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(200)
+            };
             progressTimer.Tick += ProgressTimer_Tick;
+            recentSongsList.ItemsSource = recentSongs;
         }
 
         private void OpenFile_Click(object sender, RoutedEventArgs e)
@@ -34,6 +41,7 @@ namespace Assign1
                 mediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
                 mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
                 LoadMP3File(currentFilePath);
+                AddToRecentSongs(currentFilePath);
             }
         }
 
@@ -54,11 +62,11 @@ namespace Assign1
             mediaPlayer.Stop();
             progressTimer.Stop();
             progressBar.Value = 0;
+            UpdateTimeDisplay();
         }
 
         private void SaveTags_Click(object sender, RoutedEventArgs e)
         {
-            // Stop the media player and progress timer.
             mediaPlayer.Stop();
             progressTimer.Stop();
 
@@ -70,47 +78,104 @@ namespace Assign1
                     return;
                 }
 
-                // Create a temporary file with a .mp3 extension
-                string tempFilePath = Path.ChangeExtension(Path.GetTempFileName(), ".mp3");
+                string tempFilePath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".mp3");
                 System.IO.File.Copy(currentFilePath, tempFilePath, true);
 
-                // Update the tags on the temporary file
-                using (var file = TagLib.File.Create(tempFilePath))
+                using (var mp3File = TagLib.File.Create(tempFilePath))
                 {
-                    file.Tag.Title = TitleTextBox.Text;
-                    file.Tag.Performers = new[] { ArtistTextBox.Text };
-                    file.Tag.Album = AlbumTextBox.Text;
-                    file.Tag.Year = uint.Parse(YearTextBox.Text);
-                    file.Save();
+                    mp3File.Tag.Title = TitleTextBox.Text;
+                    mp3File.Tag.Performers = new[] { ArtistTextBox.Text };
+                    mp3File.Tag.Album = AlbumTextBox.Text;
+                    if (uint.TryParse(YearTextBox.Text, out var year))
+                    {
+                        mp3File.Tag.Year = year;
+                    }
+                    mp3File.Save();
                 }
 
-                // Replace the original file with the updated temp file
                 System.IO.File.Delete(currentFilePath);
                 System.IO.File.Move(tempFilePath, currentFilePath);
 
                 MessageBox.Show("Tags saved successfully.");
+                LoadMP3File(currentFilePath);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error saving tags: " + ex.Message);
+                MessageBox.Show($"Error saving tags: {ex.Message}");
             }
         }
 
+        private void recentSongsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (recentSongsList.SelectedItem is string selectedFilePath)
+            {
+                // Assuming `selectedFilePath` is the full path to the MP3 file
+                currentFilePath = selectedFilePath;
+                mediaPlayer.Source = new Uri(currentFilePath);
+                mediaPlayer.Play(); // Play the selected file
+                LoadMP3File(currentFilePath); // Update UI based on selected file
+            }
+        }
 
 
         private void LoadMP3File(string filePath)
         {
             try
             {
-                var file = TagLib.File.Create(filePath);
-                TitleTextBox.Text = file.Tag.Title;
-                ArtistTextBox.Text = string.Join(", ", file.Tag.Performers);
-                AlbumTextBox.Text = file.Tag.Album;
-                YearTextBox.Text = file.Tag.Year.ToString();
+                using (var file = TagLib.File.Create(filePath))
+                {
+                    TitleTextBox.Text = file.Tag.Title;
+                    ArtistTextBox.Text = string.Join(", ", file.Tag.Performers);
+                    AlbumTextBox.Text = file.Tag.Album;
+                    YearTextBox.Text = file.Tag.Year.ToString();
+
+                    if (file.Tag.Pictures.Length > 0)
+                    {
+                        LoadAlbumArt(filePath);
+                    }
+                    else
+                    {
+                        albumArtImage.Source = null; // Clear album art if no picture is available
+                    }
+
+                    if (this.FindName("nowPlayingControl") is NowPlayingControl npc)
+                    {
+                        npc.Title = file.Tag.Title;
+                        npc.Artist = string.Join(", ", file.Tag.Performers);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading file: " + ex.Message);
+                MessageBox.Show($"Error loading file: {ex.Message}");
+            }
+        }
+
+
+        private void LoadAlbumArt(string filePath)
+        {
+            var file = TagLib.File.Create(filePath);
+            if (file.Tag.Pictures.Length > 0)
+            {
+                var bin = (byte[])(file.Tag.Pictures[0].Data.Data);
+                using (MemoryStream ms = new MemoryStream(bin))
+                {
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.StreamSource = ms;
+                    image.EndInit();
+
+                    albumArtImage.Source = image;
+                }
+            }
+        }
+
+        private void AddToRecentSongs(string filePath)
+        {
+            if (!recentSongs.Contains(filePath))
+            {
+                recentSongs.Add(filePath);
             }
         }
 
@@ -119,6 +184,7 @@ namespace Assign1
             if (mediaPlayer.NaturalDuration.HasTimeSpan)
             {
                 progressBar.Maximum = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                UpdateTimeDisplay();
             }
         }
 
@@ -127,6 +193,7 @@ namespace Assign1
             if (mediaPlayer.NaturalDuration.HasTimeSpan)
             {
                 progressBar.Value = mediaPlayer.Position.TotalSeconds;
+                UpdateTimeDisplay();
             }
         }
 
@@ -135,11 +202,27 @@ namespace Assign1
             mediaPlayer.Stop();
             progressTimer.Stop();
             progressBar.Value = 0;
+            UpdateTimeDisplay();
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+
+        private void UpdateTimeDisplay()
+        {
+            if (mediaPlayer.NaturalDuration.HasTimeSpan)
+            {
+                var totalSeconds = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                var currentSeconds = mediaPlayer.Position.TotalSeconds;
+                var timeLeft = totalSeconds - currentSeconds;
+                songTimeDisplay.Text = $"{TimeSpan.FromSeconds(currentSeconds):m\\:ss}/{TimeSpan.FromSeconds(totalSeconds):m\\:ss}";
+            }
+            else
+            {
+                songTimeDisplay.Text = "0:00/0:00";
+            }
         }
     }
 }

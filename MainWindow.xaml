@@ -1,85 +1,110 @@
 ﻿<Window x:Class="Assign1.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MP3 Player and Tagger" Height="450" Width="800">
+        xmlns:local="clr-namespace:Assign1"
+        Title="MP3 Player and Tagger" Height="450" Width="800" MinHeight="500" MinWidth="900" Background="#1A1A1A">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="MediaCommands.Play" Executed="Play_Click"/>
+        <CommandBinding Command="MediaCommands.Pause" Executed="Pause_Click"/>
+        <CommandBinding Command="MediaCommands.Stop" Executed="Stop_Click"/>
+    </Window.CommandBindings>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
-            <!-- For MediaElement -->
             <RowDefinition Height="*"/>
-            <!-- For Metadata, Controls, and Progress Bar -->
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
 
         <!-- Menu for File and Playback Controls -->
-        <Menu DockPanel.Dock="Top">
+        <Menu Grid.ColumnSpan="2" Background="#0D47A1" Foreground="#E0E0E0">
             <MenuItem Header="File">
-                <MenuItem Header="Open" Click="OpenFile_Click"/>
-                <MenuItem Header="Exit" Click="Exit_Click"/>
+                <MenuItem Header="Open" Click="OpenFile_Click" Foreground="Black"/>
+                <MenuItem Header="Exit" Click="Exit_Click" Foreground="Black"/>
             </MenuItem>
             <MenuItem Header="Playback">
-                <MenuItem Header="Play" Click="Play_Click"/>
-                <MenuItem Header="Pause" Click="Pause_Click"/>
-                <MenuItem Header="Stop" Click="Stop_Click"/>
+                <MenuItem Header="Play" Click="Play_Click" Foreground="Black"/>
+                <MenuItem Header="Pause" Click="Pause_Click" Foreground="Black"/>
+                <MenuItem Header="Stop" Click="Stop_Click" Foreground="Black"/>
             </MenuItem>
         </Menu>
 
-        <!-- MediaElement for the Upper Half -->
-        <MediaElement Grid.Row="0" Name="mediaPlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop" Stretch="Fill"/>
+        <!-- MediaElement for Album Cover adjusted to fill the space -->
+        <MediaElement Grid.Row="0" Grid.Column="0" Name="mediaPlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop" Stretch="UniformToFill"/>
+
+        <!-- Image for Album Art, adjusted position to bottom left and increased size -->
+        <Image Grid.Row="0" Grid.Column="0" Name="albumArtImage" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="200" Height="200" Panel.ZIndex="1"/>
+
+        <!-- Now Playing User Control Overlay with adjusted layout -->
+        <local:NowPlayingControl x:Name="nowPlayingControl" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Panel.ZIndex="2" Opacity="0.8" Background="#1976D2"/>
+
+        <!-- ListView for recent songs to the right side of the media view area -->
+        <ListView Grid.Row="0" Grid.Column="1" Name="recentSongsList" Margin="5" Background="#FF5722" SelectionChanged="recentSongsList_SelectionChanged">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Foreground" Value="#E0E0E0"/>
+                    <Setter Property="FontSize" Value="16"/>
+                    <Setter Property="Padding" Value="5"/>
+                    <Setter Property="Margin" Value="2"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
 
         <!-- Lower Half for Metadata, Controls, and Progress Bar -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="5">
                 <StackPanel Orientation="Horizontal" Margin="5">
-                    <Button Content="Play" Click="Play_Click"/>
-                    <Button Content="Pause" Click="Pause_Click" Margin="5,0"/>
-                    <Button Content="Stop" Click="Stop_Click" Margin="5,0"/>
+                    <Button Content="Play" Click="Play_Click" Background="#4CAF50" Foreground="#E0E0E0"/>
+                    <Button Content="Pause" Click="Pause_Click" Margin="5,0" Background="#4CAF50" Foreground="#E0E0E0"/>
+                    <Button Content="Stop" Click="Stop_Click" Margin="5,0" Background="#4CAF50" Foreground="#E0E0E0"/>
                 </StackPanel>
-
-                <Slider Name="progressBar" Margin="5" Value="0" Maximum="100"/>
-
-                <Grid Margin="5">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="200"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Metadata Labels and TextBoxes for Title and Artist -->
-                    <Label Grid.Row="0" Grid.Column="0" Content="Title:" Margin="5"/>
-                    <TextBox Grid.Row="0" Grid.Column="1" Name="TitleTextBox" Margin="5"/>
-                    <Label Grid.Row="1" Grid.Column="0" Content="Artist:" Margin="5"/>
-                    <TextBox Grid.Row="1" Grid.Column="1" Name="ArtistTextBox" Margin="5"/>
-                </Grid>
+                <Slider Name="progressBar" Margin="5" Value="0" Maximum="100" Foreground="#0D47A1"/>
+                <Button Content="Save Tags" Click="SaveTags_Click" HorizontalAlignment="Left" Margin="5,0" Background="#4CAF50" Foreground="#E0E0E0"/>
+                <TextBlock Name="songTimeDisplay" Text="0:00/0:00" Margin="10,0" VerticalAlignment="Center" Foreground="#E0E0E0"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="5">
-                <Grid Margin="5">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="200"/>
-                    </Grid.ColumnDefinitions>
+            <!-- Metadata Grid with two columns for labels and text boxes -->
+            <Grid Grid.Column="1" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <!-- Column for labels -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Column for text boxes, taking available space -->
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <!-- Metadata Labels and TextBoxes for Album and Year -->
-                    <Label Grid.Row="0" Grid.Column="0" Content="Album:" Margin="5"/>
-                    <TextBox Grid.Row="0" Grid.Column="1" Name="AlbumTextBox" Margin="5"/>
-                    <Label Grid.Row="1" Grid.Column="0" Content="Year:" Margin="5"/>
-                    <TextBox Grid.Row="1" Grid.Column="1" Name="YearTextBox" Margin="5"/>
-                </Grid>
-                <Button Content="Save Tags" Click="SaveTags_Click" HorizontalAlignment="Center" Margin="5"/>
-            </StackPanel>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Title Label and TextBox -->
+                <Label Grid.Row="0" Grid.Column="0" Content="Title:" Margin="5" Foreground="#E0E0E0"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Name="TitleTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
+
+                <!-- Artist Label and TextBox -->
+                <Label Grid.Row="1" Grid.Column="0" Content="Artist:" Margin="5" Foreground="#E0E0E0"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Name="ArtistTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
+
+                <!-- Album Label and TextBox -->
+                <Label Grid.Row="2" Grid.Column="0" Content="Album:" Margin="5" Foreground="#E0E0E0"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Name="AlbumTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
+
+                <!-- Year Label and TextBox -->
+                <Label Grid.Row="3" Grid.Column="0" Content="Year:" Margin="5" Foreground="#E0E0E0"/>
+                <TextBox Grid.Row="3" Grid.Column="1" Name="YearTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
