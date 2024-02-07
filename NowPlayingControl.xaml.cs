@@ -9,6 +9,7 @@ namespace Assign1
             InitializeComponent();
         }
 
+        // Properties to set the text of the title and artist
         public string Title
         {
             get => textBlockTitle.Text;
@@ -20,7 +21,5 @@ namespace Assign1
             get => textBlockArtist.Text;
             set => textBlockArtist.Text = value;
         }
-
-        // You can add more properties for additional metadata if needed
     }
 }
