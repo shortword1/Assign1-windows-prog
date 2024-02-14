@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Pulling in the essentials: UI, media handling, file dialogs, and not forgetting the mighty TagLib for tag editing.
+using System;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -8,181 +9,151 @@ using TagLib;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 
-// Define the namespace for the assignment
+// Diving into our little music player world within the Assign1 namespace.
 namespace Assign1
 {
-    // Define the main window class which inherits from Window
     public partial class MainWindow : Window
     {
-        // Fields to store the current file path, a timer for updating the progress, and a collection of recent songs
+        // Keeping track of the song currently playing because we need to know what's on.
         private string currentFilePath;
+        // A nifty timer to keep our progress bar moving. It's all about the visual feedback!
         private DispatcherTimer progressTimer;
+        // Remembering what you listened to, just like a good friend who knows your music taste.
         private ObservableCollection<string> recentSongs = new ObservableCollection<string>();
 
-        // Constructor for the MainWindow class
         public MainWindow()
         {
-            // Initialize the component (auto-generated code to setup UI components)
-            InitializeComponent();
-            // Setup the progress timer with a 200ms interval and attach the Tick event
-            progressTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(200)
-            };
-            progressTimer.Tick += ProgressTimer_Tick;
-            // Bind the recentSongs collection to the recentSongsList ListView for displaying recent songs
+            InitializeComponent(); // Setting up the stage for our UI elements.
+            // Our timer's like a metronome, ticking away to update the song's progress. Every 200 milliseconds feels just right.
+            progressTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+            progressTimer.Tick += ProgressTimer_Tick; // Each tick is a step forward in our song.
+
+            // Hooking up our list of jams to the UI. Let's see what's been on repeat!
             recentSongsList.ItemsSource = recentSongs;
+
+            // These media player events are the behind-the-scenes crew, making sure everything runs smoothly.
+            mediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
+            mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
         }
 
-        // Event handler for clicking the Open File button
+        // That moment when you find a new song and just have to play it. This button's for that.
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
-            // Create and configure an OpenFileDialog for MP3 files
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "MP3 files (*.mp3)|*.mp3"
-            };
-
-            // Show the dialog and proceed if a file is selected
+            OpenFileDialog openFileDialog = new OpenFileDialog { Filter = "MP3 files (*.mp3)|*.mp3" };
             if (openFileDialog.ShowDialog() == true)
             {
-                // Store the selected file path and set it as the media player's source
                 currentFilePath = openFileDialog.FileName;
                 mediaPlayer.Source = new Uri(currentFilePath);
-                // Subscribe to MediaOpened and MediaEnded events of the media player
-                // to update the UI and recent songs list when the media is opened and ends
-                mediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
-                mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
-                // Load the MP3 file tags to the UI and add the file to the recent songs list
-                // if it's not already in the list
-                LoadMP3File(currentFilePath);
-                AddToRecentSongs(currentFilePath);
+                LoadMP3File(currentFilePath); // Let's dig into those MP3 tags, shall we?
+                AddToRecentSongs(currentFilePath); // And don't forget, this one's going on the recent list.
             }
         }
 
-        // Event handler for clicking the Play button
+        // Hit play and let the music take over. Also, don't let that progress bar stand still!
         private void Play_Click(object sender, RoutedEventArgs e)
         {
-            mediaPlayer.Play(); // Play the media
-            progressTimer.Start(); // Start the progress timer to update the UI
+            mediaPlayer.Play();
+            progressTimer.Start();
         }
 
-        // Event handler for clicking the Pause button
+        // Sometimes you just need a pause, catch your breath, or sip your coffee. Music waits for you.
         private void Pause_Click(object sender, RoutedEventArgs e)
         {
-            mediaPlayer.Pause(); // Pause the media
-            progressTimer.Stop(); // Stop the progress timer
+            mediaPlayer.Pause();
+            progressTimer.Stop();
         }
 
-        // Event handler for clicking the Stop button
+        // All things come to an end, songs included. This stops the music and resets our visual cues.
         private void Stop_Click(object sender, RoutedEventArgs e)
         {
-            mediaPlayer.Stop(); // Stop the media
-            progressTimer.Stop(); // Stop the progress timer
-            progressBar.Value = 0; // Reset the progress bar
-            UpdateTimeDisplay(); // Update the time display
+            mediaPlayer.Stop();
+            progressTimer.Stop();
+            progressBar.Value = 0;
+            UpdateTimeDisplay(); // Let's also make sure the time display knows we've stopped.
         }
 
-        // Event handler for clicking the Save Tags button
+        // Ever wanted to play the role of a music editor? This button lets you save your tag edits back into the song file.
         private void SaveTags_Click(object sender, RoutedEventArgs e)
         {
-            mediaPlayer.Stop(); // Stop the media
-            progressTimer.Stop(); // Stop the progress timer
+            if (string.IsNullOrEmpty(currentFilePath)) return; // No file, no work to do.
 
             try
             {
-                // Check if a file is loaded
-                if (string.IsNullOrEmpty(currentFilePath))
-                {
-                    MessageBox.Show("No file is loaded.");
-                    return;
-                }
-
-                // Create a temporary copy of the MP3 file to edit tags
+                // Creating a temporary file because it's safer to work with. Just like having a rehearsal before the live show.
                 string tempFilePath = Path.ChangeExtension(Path.GetTempFileName(), ".mp3");
                 System.IO.File.Copy(currentFilePath, tempFilePath, true);
 
-                // Open the temporary file with TagLib, update its tags, and save
+                // TagLib makes editing tags feel like a breeze. Changing the song's title, artist, and more right here.
                 using (var mp3File = TagLib.File.Create(tempFilePath))
                 {
                     mp3File.Tag.Title = TitleTextBox.Text;
                     mp3File.Tag.Performers = new[] { ArtistTextBox.Text };
                     mp3File.Tag.Album = AlbumTextBox.Text;
-                    // Try to parse the year and set it if successful
-                    if (uint.TryParse(YearTextBox.Text, out var year))
-                    {
-                        mp3File.Tag.Year = year;
-                    }
+                    if (uint.TryParse(YearTextBox.Text, out var year)) mp3File.Tag.Year = year;
                     mp3File.Save();
                 }
 
-                // Replace the original file with the updated copy
+                // Now, let's make the changes real by swapping the old file with our newly edited one.
                 System.IO.File.Delete(currentFilePath);
                 System.IO.File.Move(tempFilePath, currentFilePath);
-
-                MessageBox.Show("Tags saved successfully.");
-                // Reload the MP3 file to update the UI with the new tags
-                LoadMP3File(currentFilePath);
+                LoadMP3File(currentFilePath); // A quick refresh to show off our editing skills.
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving tags: {ex.Message}");
+                MessageBox.Show($"Whoops! Ran into a snag saving tags: {ex.Message}");
             }
         }
 
-        // Event handler for changing selection in the recent songs list
+        // Picking a song from your recent list? It's like saying, "Hey, long time no see! Let's hang out."
         private void recentSongsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (recentSongsList.SelectedItem is string selectedFilePath)
             {
-                // Play the selected recent song
                 currentFilePath = selectedFilePath;
                 mediaPlayer.Source = new Uri(currentFilePath);
-                mediaPlayer.Play(); // Immediately play the selected file
-                LoadMP3File(currentFilePath); // Update the UI based on the selected file
+                mediaPlayer.Play();
+                LoadMP3File(currentFilePath); // Freshen up those song details for another round.
             }
         }
 
-        // Loads the MP3 file's tags into the UI
+        // Loading a song is more than just playing it. It's about getting to know it. Here's where we peek at the tags.
         private void LoadMP3File(string filePath)
         {
             try
             {
                 using (var file = TagLib.File.Create(filePath))
                 {
-                    TitleTextBox.Text = file.Tag.Title; // Set the title in the UI
-                    ArtistTextBox.Text = string.Join(", ", file.Tag.Performers); // Set the artist(s)
-                    AlbumTextBox.Text = file.Tag.Album; // Set the album name
-                    YearTextBox.Text = file.Tag.Year.ToString(); // Set the year
-
-                    // Load album art if available
-                    if (file.Tag.Pictures.Length > 0)
-                    {
-                        LoadAlbumArt(filePath);
-                    }
-                    else
-                    {
-                        albumArtImage.Source = null; // Clear album art if no picture is available
-                    }
-
-                    // Update the NowPlayingControl, if it exists, with the current song's info
-                    if (this.FindName("nowPlayingControl") is NowPlayingControl npc)
-                    {
-                        npc.Title = file.Tag.Title;
-                        npc.Artist = string.Join(", ", file.Tag.Performers);
-                    }
+                    // Filling in the blanks with the song's metadata. It's like a mini-biography.
+                    TitleTextBox.Text = file.Tag.Title;
+                    ArtistTextBox.Text = string.Join(", ", file.Tag.Performers);
+                    AlbumTextBox.Text = file.Tag.Album;
+                    YearTextBox.Text = file.Tag.Year.ToString();
+                    LoadAlbumArt(file); // And for the grand finale, the album art makes its appearance.
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading file: {ex.Message}");
+                MessageBox.Show($"Hit a bump loading this file: {ex.Message}");
             }
         }
 
-        // Loads the album art into the UI
-        private void LoadAlbumArt(string filePath)
+        private void AddToRecentSongs(string filePath)
         {
-            var file = TagLib.File.Create(filePath);
+            // First, let's do a quick check - is this tune already on our recent hits list?
+            // We're all for replaying the classics, but let's keep our list unique, shall we?
+            if (!recentSongs.Contains(filePath))
+            {
+                // Looks like it's a fresh hit! Let's add this track to our collection of recent jams.
+                // This way, our musical memory keeps growing, always ready with your latest favorites.
+                recentSongs.Add(filePath);
+            }
+        }
+
+
+
+        // Album art isn't just about the visuals; it's about setting the mood, telling a story with a glance.
+        private void LoadAlbumArt(TagLib.File file)
+        {
             if (file.Tag.Pictures.Length > 0)
             {
                 var bin = (byte[])(file.Tag.Pictures[0].Data.Data);
@@ -193,69 +164,56 @@ namespace Assign1
                     image.CacheOption = BitmapCacheOption.OnLoad;
                     image.StreamSource = ms;
                     image.EndInit();
-
-                    albumArtImage.Source = image; // Set the album art in the UI
+                    albumArtImage.Source = image; // Voilà, our musical story now has a face.
                 }
             }
-        }
-
-        // Adds a file path to the recent songs collection, avoiding duplicates
-        private void AddToRecentSongs(string filePath)
-        {
-            if (!recentSongs.Contains(filePath))
+            else
             {
-                recentSongs.Add(filePath);
+                albumArtImage.Source = null; // No picture? No problem. We'll leave it to the imagination.
             }
         }
 
-        // Updates the progress bar and time display when the media is opened
+        // Keeping an eye on the time isn't just polite; it's essential for tracking our journey through the song.
         private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e)
         {
-            if (mediaPlayer.NaturalDuration.HasTimeSpan)
-            {
-                progressBar.Maximum = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                UpdateTimeDisplay(); // Initial update for the time display
-            }
+            progressBar.Maximum = mediaPlayer.NaturalDuration.HasTimeSpan ? mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds : 0;
+            UpdateTimeDisplay(); // A quick setup to ensure our time display is on point.
         }
 
-        // Updates the progress bar and time display periodically
+        // Like the ticking of a clock, our progress timer keeps us in sync with the song's flow.
         private void ProgressTimer_Tick(object sender, EventArgs e)
         {
-            if (mediaPlayer.NaturalDuration.HasTimeSpan)
-            {
-                progressBar.Value = mediaPlayer.Position.TotalSeconds;
-                UpdateTimeDisplay(); // Update the time display with the current position
-            }
+            progressBar.Value = mediaPlayer.Position.TotalSeconds;
+            UpdateTimeDisplay(); // Always keeping you in the loop with how much song you've enjoyed and how much is still to come.
         }
 
-        // Resets the progress bar and stops the timer when the media playback ends
+        // When the music's over, we take a moment to reset, readying ourselves for the next adventure.
         private void MediaPlayer_MediaEnded(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Stop();
             progressTimer.Stop();
             progressBar.Value = 0;
-            UpdateTimeDisplay(); // Update the time display to reflect the stopped state
+            UpdateTimeDisplay(); // Back to square one, but with new songs to discover.
         }
 
-        // Exits the application
+        // And when it's time to say goodbye, we do so gracefully, making sure everything's wrapped up nicely.
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
 
-        // Updates the time display UI with the current playback position and total duration
+        // Our song's timeline isn't just numbers; it's a narrative of our listening experience, beautifully told in minutes and seconds.
         private void UpdateTimeDisplay()
         {
-            if (mediaPlayer.NaturalDuration.HasTimeSpan)
-            {
-                var totalSeconds = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                var currentSeconds = mediaPlayer.Position.TotalSeconds;
-                songTimeDisplay.Text = $"{TimeSpan.FromSeconds(currentSeconds):m\\:ss}/{TimeSpan.FromSeconds(totalSeconds):m\\:ss}";
-            }
-            else
-            {
-                songTimeDisplay.Text = "0:00/0:00"; // Default display if duration is not available
-            }
+            var totalSeconds = mediaPlayer.NaturalDuration.HasTimeSpan ? mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds : 0;
+            var currentSeconds = mediaPlayer.Position.TotalSeconds;
+            songTimeDisplay.Text = $"{TimeSpan.FromSeconds(currentSeconds):m\\:ss}/{TimeSpan.FromSeconds(totalSeconds):m\\:ss}";
         }
     }
 }
+
+
+// http://taglib.org/api/ 
+// https://chat.openai.com/
+// https://www.github.com/
+// https://www.microsoft.com/learn
