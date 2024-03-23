@@ -1,9 +1,8 @@
-﻿<!-- Main Window Definition -->
-<Window x:Class="Assign1.MainWindow"
+﻿<Window x:Class="Assign1.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Assign1"
-        Title="MP3 Player and Tagger" Height="450" Width="600" MinHeight="500" MinWidth="900" Background="#1A1A1A">
+        Title="MP3 Player and Tagger" Height="450" Width="600" MinHeight="500" MinWidth="900" Background="#FFFFFC">
 
     <!-- Command Bindings for Playback Controls -->
     <Window.CommandBindings>
@@ -17,10 +16,11 @@
         <!-- Storyboard for Color Change Animation on a UI Element -->
         <Storyboard x:Key="ColorChangeAnimation">
             <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0:0:5" RepeatBehavior="Forever">
-                <DiscreteColorKeyFrame Value="Red" KeyTime="0:0:1"/>
-                <DiscreteColorKeyFrame Value="Green" KeyTime="0:0:2"/>
-                <DiscreteColorKeyFrame Value="Blue" KeyTime="0:0:3"/>
-                <DiscreteColorKeyFrame Value="Yellow" KeyTime="0:0:4"/>
+                <DiscreteColorKeyFrame Value="#FFADAD" KeyTime="0:0:1"/>
+                <DiscreteColorKeyFrame Value="#FFD6A5" KeyTime="0:0:2"/>
+                <DiscreteColorKeyFrame Value="#FDFFB6" KeyTime="0:0:3"/>
+                <DiscreteColorKeyFrame Value="#CAFFBF" KeyTime="0:0:4"/>
+                <DiscreteColorKeyFrame Value="#9BF6FF" KeyTime="0:0:5"/>
             </ColorAnimationUsingKeyFrames>
         </Storyboard>
     </Window.Resources>
@@ -38,7 +38,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Menu for File and Playback Controls -->
-        <Menu Grid.ColumnSpan="2" Background="#0D47A1" Foreground="#E0E0E0">
+        <Menu Grid.ColumnSpan="2" Background="#A0C4FF" Foreground="Black">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Click="OpenFile_Click" Foreground="Black"/>
                 <MenuItem Header="Exit" Click="Exit_Click" Foreground="Black"/>
@@ -57,13 +57,13 @@
         <Image Grid.Row="0" Grid.Column="0" Name="albumArtImage" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="400" Height="275" Panel.ZIndex="1"/>
 
         <!-- Custom Control for Displaying Now Playing Information -->
-        <local:NowPlayingControl x:Name="nowPlayingControl" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Panel.ZIndex="2" Opacity="0.8" Background="#1976D2"/>
+        <local:NowPlayingControl x:Name="nowPlayingControl" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Panel.ZIndex="2" Opacity="0.8" Background="#BDB2FF"/>
 
         <!-- List View for Displaying Recent Songs -->
         <ListView Grid.Row="0" Grid.Column="0" Name="recentSongsList" HorizontalAlignment="Right" VerticalAlignment="Top" Width="200" Height="200" Panel.ZIndex="3" Background="#AAFFFFFF" Margin="5" SelectionChanged="recentSongsList_SelectionChanged">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
-                    <Setter Property="Foreground" Value="#E0E0E0"/>
+                    <Setter Property="Foreground" Value="Black"/>
                     <Setter Property="FontSize" Value="16"/>
                     <Setter Property="Padding" Value="5"/>
                     <Setter Property="Margin" Value="2"/>
@@ -82,13 +82,13 @@
             <!-- Playback Controls and Progress Bar -->
             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="5">
                 <StackPanel Orientation="Horizontal" Margin="5">
-                    <Button Content="Play" Click="Play_Click" Background="#4CAF50" Foreground="#E0E0E0"/>
-                    <Button Content="Pause" Click="Pause_Click" Margin="5,0" Background="#4CAF50" Foreground="#E0E0E0"/>
-                    <Button Content="Stop" Click="Stop_Click" Margin="5,0" Background="#4CAF50" Foreground="#E0E0E0"/>
+                    <Button Content="Play" Click="Play_Click" Background="#FFADAD" Foreground="Black"/>
+                    <Button Content="Pause" Click="Pause_Click" Margin="5,0" Background="#FFD6A5" Foreground="Black"/>
+                    <Button Content="Stop" Click="Stop_Click" Margin="5,0" Background="#FDFFB6" Foreground="Black"/>
                 </StackPanel>
-                <Slider Name="progressBar" Margin="5" Value="0" Maximum="100" Foreground="#0D47A1"/>
-                <Button Content="Save Tags" Click="SaveTags_Click" HorizontalAlignment="Left" Margin="5,0" Background="#4CAF50" Foreground="#E0E0E0"/>
-                <TextBlock Name="songTimeDisplay" Text="0:00/0:00" Margin="10,0" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+                <Slider Name="progressBar" Margin="5" Value="0" Maximum="100" Foreground="Black"/>
+                <Button Content="Save Tags" Click="SaveTags_Click" HorizontalAlignment="Left" Margin="5,0" Background="#9BF6FF" Foreground="Black"/>
+                <TextBlock Name="songTimeDisplay" Text="0:00/0:00" Margin="10,0" VerticalAlignment="Center" Foreground="Black"/>
             </StackPanel>
 
             <!-- Metadata Entry Fields -->
@@ -107,14 +107,14 @@
                 </Grid.RowDefinitions>
 
                 <!-- Metadata Fields: Title, Artist, Album, Year -->
-                <Label Grid.Row="0" Grid.Column="0" Content="Title:" Margin="5" Foreground="#E0E0E0"/>
-                <TextBox Grid.Row="0" Grid.Column="1" Name="TitleTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
-                <Label Grid.Row="1" Grid.Column="0" Content="Artist:" Margin="5" Foreground="#E0E0E0"/>
-                <TextBox Grid.Row="1" Grid.Column="1" Name="ArtistTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
-                <Label Grid.Row="2" Grid.Column="0" Content="Album:" Margin="5" Foreground="#E0E0E0"/>
-                <TextBox Grid.Row="2" Grid.Column="1" Name="AlbumTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
-                <Label Grid.Row="3" Grid.Column="0" Content="Year:" Margin="5" Foreground="#E0E0E0"/>
-                <TextBox Grid.Row="3" Grid.Column="1" Name="YearTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#333333" Foreground="#E0E0E0"/>
+                <Label Grid.Row="0" Grid.Column="0" Content="Title:" Margin="5" Foreground="Black"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Name="TitleTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#A0C4FF" Foreground="Black"/>
+                <Label Grid.Row="1" Grid.Column="0" Content="Artist:" Margin="5" Foreground="Black"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Name="ArtistTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#BDB2FF" Foreground="Black"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Album:" Margin="5" Foreground="Black"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Name="AlbumTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#FFC6FF" Foreground="Black"/>
+                <Label Grid.Row="3" Grid.Column="0" Content="Year:" Margin="5" Foreground="Black"/>
+                <TextBox Grid.Row="3" Grid.Column="1" Name="YearTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#FFADAD" Foreground="Black"/>
             </Grid>
             <!-- Animated Background for Visual Feedback -->
             <Grid Grid.Column="2">
