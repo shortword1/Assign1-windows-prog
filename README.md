@@ -12,4 +12,5 @@ Intuitive Interface: The user-friendly GUI ensures that all functionalities are 
 Music Library Management: With the ability to view and edit song metadata, organizing your music collection has never been easier. Our application provides the tools you need to maintain a perfectly curated library.
 Whether you're looking to enjoy your favorite tunes or keep your music collection meticulously organized, this MP3 Player and Tagger is your go-to solution. Embrace the fusion of convenience and functionality – your enhanced music experience awaits.
 
-![mediaPlayer](https://github.com/shortword1/Media-Player/assets/84405292/0f047c82-a679-44ba-badc-a431b2ad04e5)
+![mediaPlayer](https://raw.githubusercontent.com/shortword1/Media-Player/main/assets/0f047c82-a679-44ba-badc-a431b2ad04e5.gif)
+
