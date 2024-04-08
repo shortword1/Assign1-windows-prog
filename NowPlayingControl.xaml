@@ -7,7 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="300">
     <Grid Background="#AA000000">
-        <!-- Semi-transparent background -->
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock x:Name="textBlockTitle" Text="Title" Foreground="White" FontSize="16" FontWeight="Bold" TextAlignment="Center"/>
             <TextBlock x:Name="textBlockArtist" Text="Artist" Foreground="White" FontSize="14" TextAlignment="Center"/>
