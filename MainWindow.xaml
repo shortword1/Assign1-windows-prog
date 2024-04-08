@@ -36,7 +36,6 @@
 
         <local:NowPlayingControl x:Name="nowPlayingControl" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Panel.ZIndex="2" Opacity="0.8" Background="#BDB2FF"/>
 
-        <!-- List View for Displaying Recent Songs -->
         <ListView Grid.Row="0" Grid.Column="0" Name="recentSongsList" HorizontalAlignment="Right" VerticalAlignment="Top" Width="200" Height="200" Panel.ZIndex="3" Background="#AAFFFFFF" Margin="5" SelectionChanged="recentSongsList_SelectionChanged">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
