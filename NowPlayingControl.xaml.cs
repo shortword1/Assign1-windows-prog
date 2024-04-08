@@ -9,7 +9,6 @@ namespace Assign1
             InitializeComponent();
         }
 
-        // Properties to set the text of the title and artist
         public string Title
         {
             get => textBlockTitle.Text;
