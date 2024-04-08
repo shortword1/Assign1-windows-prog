@@ -4,40 +4,20 @@
         xmlns:local="clr-namespace:Assign1"
         Title="MP3 Player and Tagger" Height="450" Width="600" MinHeight="500" MinWidth="900" Background="#FFFFFC">
 
-    <!-- Command Bindings for Playback Controls -->
     <Window.CommandBindings>
         <CommandBinding Command="MediaCommands.Play" Executed="Play_Click"/>
         <CommandBinding Command="MediaCommands.Pause" Executed="Pause_Click"/>
         <CommandBinding Command="MediaCommands.Stop" Executed="Stop_Click"/>
     </Window.CommandBindings>
-
-    <!-- Resources Section -->
-    <Window.Resources>
-        <!-- Storyboard for Color Change Animation on a UI Element -->
-        <Storyboard x:Key="ColorChangeAnimation">
-            <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0:0:5" RepeatBehavior="Forever">
-                <DiscreteColorKeyFrame Value="#FFADAD" KeyTime="0:0:1"/>
-                <DiscreteColorKeyFrame Value="#FFD6A5" KeyTime="0:0:2"/>
-                <DiscreteColorKeyFrame Value="#FDFFB6" KeyTime="0:0:3"/>
-                <DiscreteColorKeyFrame Value="#CAFFBF" KeyTime="0:0:4"/>
-                <DiscreteColorKeyFrame Value="#9BF6FF" KeyTime="0:0:5"/>
-            </ColorAnimationUsingKeyFrames>
-        </Storyboard>
-    </Window.Resources>
-
-    <!-- Layout Grid -->
     <Grid>
-        <!-- Row Definitions for Main Layout -->
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <!-- Single Column Definition -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Menu for File and Playback Controls -->
         <Menu Grid.ColumnSpan="2" Background="#A0C4FF" Foreground="Black">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Click="OpenFile_Click" Foreground="Black"/>
@@ -50,13 +30,10 @@
             </MenuItem>
         </Menu>
 
-        <!-- Media Player Element -->
         <MediaElement Grid.Row="0" Grid.Column="0" Name="mediaPlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop" Stretch="UniformToFill"/>
 
-        <!-- Image Element for Album Art -->
         <Image Grid.Row="0" Grid.Column="0" Name="albumArtImage" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="400" Height="275" Panel.ZIndex="1"/>
 
-        <!-- Custom Control for Displaying Now Playing Information -->
         <local:NowPlayingControl x:Name="nowPlayingControl" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Panel.ZIndex="2" Opacity="0.8" Background="#BDB2FF"/>
 
         <!-- List View for Displaying Recent Songs -->
@@ -71,7 +48,7 @@
             </ListView.ItemContainerStyle>
         </ListView>
 
-        <!-- Lower Section for Metadata, Playback Controls, and Progress Bar -->
+       
         <Grid Grid.Row="1" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
@@ -79,7 +56,7 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Playback Controls and Progress Bar -->
+            
             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="5">
                 <StackPanel Orientation="Horizontal" Margin="5">
                     <Button Content="Play" Click="Play_Click" Background="#FFADAD" Foreground="Black"/>
@@ -91,7 +68,6 @@
                 <TextBlock Name="songTimeDisplay" Text="0:00/0:00" Margin="10,0" VerticalAlignment="Center" Foreground="Black"/>
             </StackPanel>
 
-            <!-- Metadata Entry Fields -->
             <Grid Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -106,7 +82,6 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Metadata Fields: Title, Artist, Album, Year -->
                 <Label Grid.Row="0" Grid.Column="0" Content="Title:" Margin="5" Foreground="Black"/>
                 <TextBox Grid.Row="0" Grid.Column="1" Name="TitleTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#A0C4FF" Foreground="Black"/>
                 <Label Grid.Row="1" Grid.Column="0" Content="Artist:" Margin="5" Foreground="Black"/>
@@ -115,20 +90,6 @@
                 <TextBox Grid.Row="2" Grid.Column="1" Name="AlbumTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#FFC6FF" Foreground="Black"/>
                 <Label Grid.Row="3" Grid.Column="0" Content="Year:" Margin="5" Foreground="Black"/>
                 <TextBox Grid.Row="3" Grid.Column="1" Name="YearTextBox" HorizontalAlignment="Left" Width="150" Height="20" VerticalAlignment="Center" Background="#FFADAD" Foreground="Black"/>
-            </Grid>
-            <!-- Animated Background for Visual Feedback -->
-            <Grid Grid.Column="2">
-                <Rectangle Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
-                    <Rectangle.Fill>
-                        <SolidColorBrush Color="Black"/>
-                    </Rectangle.Fill>
-                    <Rectangle.Triggers>
-                        <!-- Trigger for Starting Color Change Animation -->
-                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                            <BeginStoryboard Storyboard="{StaticResource ColorChangeAnimation}"/>
-                        </EventTrigger>
-                    </Rectangle.Triggers>
-                </Rectangle>
             </Grid>
         </Grid>
     </Grid>
